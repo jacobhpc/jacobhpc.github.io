@@ -1,0 +1,17 @@
+---
+layout: page
+title: Blog
+eyebrow: Notes
+permalink: /blog/
+subtitle: "Research notes, write-ups, and things I'm working through."
+---
+
+{% for post in site.posts %}
+<div class="post-list-item">
+  <span class="post-date mono">{{ post.date | date: "%d %b %Y" }}</span>
+  <h3 style="margin:.2rem 0;"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+  <p class="muted" style="font-size:.95rem;">{{ post.excerpt | strip_html | truncatewords: 28 }}</p>
+</div>
+{% else %}
+<p class="muted">No posts yet — check back soon.</p>
+{% endfor %}

@@ -1,0 +1,12 @@
+<footer class="site-footer">
+  <div class="wrap">
+    <span class="mono muted">&copy; {{ 'now' | date: "%Y" }} {{ site.author.name }}</span>
+    <div class="footer-links">
+      <a href="https://orcid.org/{{ site.author.orcid }}" target="_blank" rel="me noopener">ORCID</a>
+      <a href="{{ site.author.linkedin }}" target="_blank" rel="me noopener">LinkedIn</a>
+      {% if site.author.github %}<a href="{{ site.author.github }}" target="_blank" rel="me noopener">GitHub</a>{% endif %}
+      <a href="mailto:{{ site.author.email }}">Email</a>
+      <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
+    </div>
+  </div>
+</footer>

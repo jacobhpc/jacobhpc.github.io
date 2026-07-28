@@ -1,0 +1,22 @@
+---
+layout: page
+title: Projects
+eyebrow: Selected work
+permalink: /projects/
+subtitle: "Research software, pipelines, and side projects."
+---`
+
+<div class="project-grid">
+  {% for project in site.projects %}
+  <a class="project-card" href="{{ project.url | relative_url }}" style="text-decoration:none; display:block;">
+    <span class="status mono">{{ project.status | default: "Project" }}</span>
+    <h3>{{ project.title }}</h3>
+    <p class="muted" style="font-size:.92rem;">{{ project.subtitle }}</p>
+  </a>
+  {% endfor %}
+</div>
+
+<p class="muted" style="margin-top:2rem; font-size:.9rem;">
+  To add a project, drop a new markdown file in <code>_projects/</code> —
+  see <code>_projects/example-project.md</code> for the template.
+</p>

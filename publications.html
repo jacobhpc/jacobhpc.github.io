@@ -1,0 +1,125 @@
+---
+layout: page
+title: Publications
+eyebrow: Research output
+permalink: /publications/
+subtitle: "Pulled live from ORCID — most recent first."
+---
+
+<div id="pub-status" class="muted mono" style="font-size:.85rem;">Loading publications from ORCID…</div>
+<div id="pub-list"></div>
+
+<p style="margin-top:2rem;">
+  <a class="btn" href="https://orcid.org/{{ site.author.orcid }}" target="_blank" rel="noopener">Full record on ORCID &rarr;</a>
+</p>
+
+<script>
+(function () {
+  var ORCID_ID = "{{ site.author.orcid }}";
+  var BASE = "https://pub.orcid.org/v3.0/" + ORCID_ID;
+  var listEl = document.getElementById('pub-list');
+  var statusEl = document.getElementById('pub-status');
+
+  function typeLabel(t) {
+    if (!t) return "Publication";
+    return t.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function extractDoi(externalIds) {
+    if (!externalIds || !externalIds['external-id']) return null;
+    var match = externalIds['external-id'].filter(function (e) {
+      return e['external-id-type'] === 'doi';
+    })[0];
+    return match ? match['external-id-value'] : null;
+  }
+
+  function formatDate(pd) {
+    if (!pd || !pd.year) return "";
+    var months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var y = pd.year.value;
+    var m = pd.month ? parseInt(pd.month.value, 10) : null;
+    return m ? months[m] + " " + y : y;
+  }
+
+  function sortKey(pd) {
+    if (!pd || !pd.year) return "0000-00";
+    var m = pd.month ? pd.month.value : "01";
+    return pd.year.value + "-" + m;
+  }
+
+  // Step 1: get the list of works (summaries only — fast, one request)
+  fetch(BASE + "/works", { headers: { "Accept": "application/json" } })
+    .then(function (r) {
+      if (!r.ok) throw new Error("ORCID API error " + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      var groups = data.group || [];
+      if (groups.length === 0) {
+        statusEl.textContent = "No publications on ORCID yet.";
+        return;
+      }
+
+      var works = groups.map(function (g) {
+        var summary = g['work-summary'][0];
+        return {
+          putCode: summary['put-code'],
+          title: (summary.title && summary.title.title) ? summary.title.title.value : "Untitled",
+          type: summary.type,
+          date: summary['publication-date'],
+          sort: sortKey(summary['publication-date']),
+          doi: extractDoi(g['external-ids'] || summary['external-ids']),
+          url: summary.url ? summary.url.value : null,
+          journal: summary['journal-title'] ? summary['journal-title'].value : null,
+          description: null
+        };
+      });
+      works.sort(function (a, b) { return b.sort.localeCompare(a.sort); });
+
+      // Render immediately with what we have, so the page doesn't sit on
+      // a blank loading state waiting for extra per-work requests.
+      render(works);
+
+      // Step 2: fetch each full work record in parallel to pick up an
+      // abstract/description where ORCID has one on file. Best effort —
+      // many records won't have one, and that's fine.
+      var detailFetches = works.map(function (w) {
+        return fetch(BASE + "/work/" + w.putCode, { headers: { "Accept": "application/json" } })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (full) {
+            if (full && full['short-description']) w.description = full['short-description'];
+          })
+          .catch(function () { /* description is optional, ignore failures */ });
+      });
+
+      Promise.all(detailFetches).then(function () { render(works); });
+    })
+    .catch(function (err) {
+      statusEl.textContent = "Couldn't reach the ORCID API right now — see the full record on ORCID below.";
+      console.error(err);
+    });
+
+  function render(works) {
+    statusEl.style.display = 'none';
+    listEl.innerHTML = works.map(function (w, i) {
+      var link = w.doi ? ("https://doi.org/" + w.doi) : w.url;
+      var linkLabel = w.doi ? ("DOI: " + w.doi) : (w.url ? "View source" : null);
+      return (
+        '<div class="entry"' + (i === 0 ? ' style="border-top:1px solid var(--line);"' : '') + '>' +
+          '<div class="entry-meta mono">' + formatDate(w.date) +
+            '<br>' + typeLabel(w.type) +
+            (w.journal ? ('<br>' + w.journal) : '') +
+          '</div>' +
+          '<div>' +
+            '<h3 class="entry-title">' +
+              (link ? ('<a href="' + link + '" target="_blank" rel="noopener">' + w.title + '</a>') : w.title) +
+            '</h3>' +
+            (w.description ? ('<p class="muted" style="font-size:.95rem;">' + w.description + '</p>') : '') +
+            (linkLabel ? ('<p style="margin-top:.6rem; font-size:.85rem;"><a href="' + link + '" target="_blank" rel="noopener">' + linkLabel + '</a></p>') : '') +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+})();
+</script>
