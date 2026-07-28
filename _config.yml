@@ -1,26 +1,25 @@
 title: "Jacob Coleman"
-tagline: "Independent Researcher — Physics
-description: >-
-  Personal research site of Jacob Coleman: publications, projects.
-url: "" 
-baseurl: "" 
+tagline: "Independent Researcher -Physics"
+description: "Personal research site of Jacob Coleman: publications, projects, and thoughts."
+
+url: "https://jacobhpc.github.io"
+baseurl: ""
 
 author:
   name: "Jacob Coleman"
-  email: "jacobhpc27@gmail.com"  
+  email: "jacobhpc27l@gmail.com"
   orcid: "0009-0007-6631-2575"
   linkedin: "https://www.linkedin.com/in/jacobhpc"
-  github: "jacobhpc"                        
+  github: ""
   affiliation: "Independent Researcher"
 
-# Blog posts
 collections:
   projects:
     output: true
-    permalink: /projects/:path/
+    permalink: "/projects/:path/"
 
 markdown: kramdown
-permalink: /blog/:year/:month/:day/:title/
+permalink: "/blog/:year/:month/:day/:title/"
 
 plugins:
   - jekyll-feed
@@ -39,6 +38,5 @@ defaults:
       layout: "project"
 
 exclude:
-  - README.md
   - Gemfile
   - Gemfile.lock
